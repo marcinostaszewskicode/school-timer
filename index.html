@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Timer lekcji</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: #ffffff;
+    transition: background-color 0.5s ease;
+  }
+  .bg-purple { background-color: #6A0DAD; }
+  .bg-green  { background-color: #2E7D32; }
+  .bg-gray   { background-color: #333333; }
+
+  #topTitle {
+    position: absolute;
+    top: 3vh;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 4vw;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  #mainDisplay {
+    width: 100%;
+    text-align: center;
+    line-height: 1;
+  }
+
+  #timer {
+    font-size: 18vw;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+
+  #message {
+    font-size: 6vw;
+    font-weight: 700;
+    padding: 0 4vw;
+  }
+
+  #lessonNumber {
+    position: absolute;
+    bottom: 3vh;
+    right: 3vw;
+    font-size: 2.5vw;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+
+  @media (max-width: 700px) {
+    #topTitle { font-size: 7vw; }
+    #timer { font-size: 22vw; }
+    #message { font-size: 9vw; }
+    #lessonNumber { font-size: 5vw; }
+  }
+</style>
+</head>
+<body id="body">
+
+  <div id="topTitle"></div>
+
+  <div id="mainDisplay">
+    <div id="timer" style="display:none;"></div>
+    <div id="message" style="display:none;"></div>
+  </div>
+
+  <div id="lessonNumber"></div>
+
+<script>
+  // Definicje planu lekcji: [godzina_startu "HH:MM", czas_trwania_w_minutach]
+  const scheduleMonFri = [
+    ["08:30", 40], ["09:15", 40], ["10:10", 40], ["10:55", 40],
+    ["11:40", 40], ["12:25", 40], ["13:10", 40], ["13:55", 40], ["14:40", 40]
+  ];
+
+  const scheduleTueWedThu = [
+    ["08:30", 45], ["09:20", 45], ["10:30", 45], ["11:20", 45],
+    ["12:15", 45], ["13:30", 45], ["14:20", 45], ["15:15", 45], ["16:05", 45]
+  ];
+
+  const bodyEl = document.getElementById('body');
+  const topTitleEl = document.getElementById('topTitle');
+  const timerEl = document.getElementById('timer');
+  const messageEl = document.getElementById('message');
+  const lessonNumberEl = document.getElementById('lessonNumber');
+
+  function parseTimeToday(hhmm, baseDate) {
+    const [h, m] = hhmm.split(':').map(Number);
+    const d = new Date(baseDate);
+    d.setHours(h, m, 0, 0);
+    return d;
+  }
+
+  function formatCountdown(ms) {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const mm = Math.floor(totalSeconds / 60);
+    const ss = totalSeconds % 60;
+    return String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
+  }
+
+  function showTimer(text) {
+    timerEl.style.display = 'block';
+    messageEl.style.display = 'none';
+    timerEl.textContent = text;
+  }
+
+  function showMessage(text) {
+    timerEl.style.display = 'none';
+    messageEl.style.display = 'block';
+    messageEl.textContent = text;
+  }
+
+  function setTheme(theme) {
+    bodyEl.classList.remove('bg-purple', 'bg-green', 'bg-gray');
+    if (theme === 'purple') {
+      bodyEl.classList.add('bg-purple');
+      topTitleEl.textContent = 'Korczakowska Szkoła Marzeń';
+      topTitleEl.style.display = 'block';
+    } else if (theme === 'green') {
+      bodyEl.classList.add('bg-green');
+      topTitleEl.textContent = 'Dobra TU';
+      topTitleEl.style.display = 'block';
+    } else {
+      bodyEl.classList.add('bg-gray');
+      topTitleEl.style.display = 'none';
+    }
+  }
+
+  function update() {
+    const now = new Date();
+    const day = now.getDay(); // 0 = niedziela, 1 = poniedziałek ... 6 = sobota
+
+    // Weekend
+    if (day === 0 || day === 6) {
+      setTheme('gray');
+      showMessage('Weekend');
+      lessonNumberEl.textContent = '';
+      return;
+    }
+
+    let schedule, theme;
+    if (day === 1 || day === 5) {
+      schedule = scheduleMonFri;
+      theme = 'purple';
+    } else {
+      schedule = scheduleTueWedThu;
+      theme = 'green';
+    }
+    setTheme(theme);
+
+    // Zbuduj listę lekcji z pełnymi datami start/koniec
+    const lessons = schedule.map(([start, duration]) => {
+      const startDate = parseTimeToday(start, now);
+      const endDate = new Date(startDate.getTime() + duration * 60000);
+      return { start: startDate, end: endDate };
+    });
+
+    const firstLessonStart = lessons[0].start;
+    const lastLessonEnd = lessons[lessons.length - 1].end;
+    const todayEightAM = parseTimeToday('08:00', now);
+
+    // Trwa lekcja?
+    for (let i = 0; i < lessons.length; i++) {
+      if (now >= lessons[i].start && now < lessons[i].end) {
+        const remaining = lessons[i].end - now;
+        showTimer(formatCountdown(remaining));
+        lessonNumberEl.textContent = 'lekcja ' + (i + 1);
+        return;
+      }
+    }
+
+    // Przed pierwszą lekcją tego dnia
+    if (now < firstLessonStart) {
+      if (now < todayEightAM) {
+        showMessage('Czas wolny');
+        lessonNumberEl.textContent = '';
+      } else {
+        showMessage('Początek lekcji o ' + schedule[0][0]);
+        lessonNumberEl.textContent = 'lekcja 1';
+      }
+      return;
+    }
+
+    // Po ostatniej lekcji tego dnia (aż do godziny 8:00 następnego dnia,
+    // co zostanie ponownie ocenione automatycznie po zmianie daty)
+    if (now >= lastLessonEnd) {
+      showMessage('Czas wolny');
+      lessonNumberEl.textContent = '';
+      return;
+    }
+
+    // Jesteśmy na przerwie między lekcjami
+    for (let i = 0; i < lessons.length - 1; i++) {
+      if (now >= lessons[i].end && now < lessons[i + 1].start) {
+        const nextStart = schedule[i + 1][0];
+        showMessage('przerwa do ' + nextStart);
+        lessonNumberEl.textContent = 'lekcja ' + (i + 2);
+        return;
+      }
+    }
+  }
+
+  update();
+  setInterval(update, 1000);
+</script>
+
+</body>
+</html>

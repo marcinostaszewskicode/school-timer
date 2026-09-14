@@ -13,21 +13,14 @@
   }
   body {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
     color: #ffffff;
     transition: background-color 0.5s ease;
   }
-  #leftSide {
-    display: flex;
-    flex-direction: column;
-    width: 75%;
-  }
-  #rightSide {
-    width: 25%;
-  }
+ 
   .bg-purple { background-color: #6A0DAD; }
   .bg-green  { background-color: #2E7D32; }
   .bg-gray   { background-color: #333333; }
@@ -79,7 +72,6 @@
 </style>
 </head>
 <body id="body">
- <div id="leftSide">
    <div id="topTitle"></div>
  
    <div id="mainDisplay">
@@ -88,11 +80,8 @@
    </div>
  
    <div id="lessonNumber"></div>
-  </div>
- 
- <div id="rightSide"></div>
- 
-<script>
+
+ <script>
   // Definicje planu lekcji: [godzina_startu "HH:MM", czas_trwania_w_minutach]
   const scheduleMonFri = [
     ["08:30", 40], ["09:15", 40], ["10:10", 40], ["10:55", 40],

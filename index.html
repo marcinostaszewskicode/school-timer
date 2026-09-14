@@ -20,6 +20,12 @@
     color: #ffffff;
     transition: background-color 0.5s ease;
   }
+  #leftSide {
+    width: 75%;
+  }
+  #rightSide {
+    width: 25%;
+  }
   .bg-purple { background-color: #6A0DAD; }
   .bg-green  { background-color: #2E7D32; }
   .bg-gray   { background-color: #333333; }
@@ -71,16 +77,19 @@
 </style>
 </head>
 <body id="body">
-
-  <div id="topTitle"></div>
-
-  <div id="mainDisplay">
-    <div id="timer" style="display:none;"></div>
-    <div id="message" style="display:none;"></div>
+ <div id="leftSide">
+   <div id="topTitle"></div>
+ 
+   <div id="mainDisplay">
+     <div id="timer" style="display:none;"></div>
+     <div id="message" style="display:none;"></div>
+   </div>
+ 
+   <div id="lessonNumber"></div>
   </div>
-
-  <div id="lessonNumber"></div>
-
+ 
+ <div id="rightSide"></div>
+ 
 <script>
   // Definicje planu lekcji: [godzina_startu "HH:MM", czas_trwania_w_minutach]
   const scheduleMonFri = [
